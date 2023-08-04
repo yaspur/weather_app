@@ -10,7 +10,8 @@ const List<Color> colorList = [
   Colors.orange,
   Colors.yellow,
   Colors.lightBlueAccent,
-  Colors.grey
+  Colors.grey,
+  Colors.white
 
 ];
 
@@ -28,6 +29,7 @@ class AppTheme {
   ThemeData getTheme() {
     return ThemeData(
       useMaterial3: true,
+      brightness: Brightness.light,
       colorSchemeSeed: colorList[selectedColor],
     );
   }

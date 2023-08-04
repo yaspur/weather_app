@@ -1,6 +1,7 @@
 # weather_app
 
-A new Flutter project.
+Ap0licacion hecha para practicar flutter
+como lo es el uso de widgets y manejo de API, con providers y demas
 
 ## Getting Started
 

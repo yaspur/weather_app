@@ -1,247 +1,229 @@
-import 'package:flutter/material.dart';
-import 'package:weather_app/presentation/widgets/shared/search_box.dart';
+import 'dart:convert';
 
-class HomeScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:weather_app/domain/entities/weather.dart';
+
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const SearchBox()
-      ),
-      body: const _HomeWeather(),
-    );
-  }
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeWeather extends StatelessWidget {
-  const _HomeWeather();
+class _HomeScreenState extends State<HomeScreen> {
+
+  late Future<Weather> myWeather;
+
+  Future<Weather> fetchWeather() async {
+
+    final resp = await http.get(
+      Uri.parse(
+        'https://api.openweathermap.org/data/2.5/weather?q=barranquilla&appid=a7f6ded3dd2350f5ad6ef7ea5480891d'
+      )
+    );
+
+    if(resp.statusCode == 200){
+      Map<String, dynamic> json = jsonDecode(resp.body);
+
+      return Weather.fromJson(json);
+    }
+    else {
+      throw Exception('Verifica tu ciudad');
+    }
+
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    myWeather = fetchWeather();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          flex: 2,
-          child: Container(
-            color: Colors.transparent,
-            child: const Padding(
-              padding: EdgeInsets.all(10),
-              child: Row(
+    return Scaffold(
+      backgroundColor: const Color(0xFF676BD0),
+      body: Padding(
+        padding: const EdgeInsets.only(
+          left: 15.0,
+          right: 15.0,
+          top: 30.0,
+        ),
+        child: Stack(
+          children: [
+            SafeArea(
+              top: true,
+              child: Column(
                 children: [
-                  Expanded(
-                    flex: 8,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('Barranquilla, Atlantico', textScaleFactor: 2.5),
-                        Text('4 de agosto de 2023', textScaleFactor: 1.2)
-                      ],
-                    ),
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Icon(
+                        Icons.menu,
+                        color: Colors.white,
+                      ),
+                    ],
                   ),
-            
-                  Expanded(
-                    flex: 2,
-                    child: Icon(Icons.sunny, size: 50,)
-                  )
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  FutureBuilder<Weather>(
+                    future: myWeather,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              snapshot.data!.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Text(
+                              snapshot.data!.weather[0]['main'].toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                letterSpacing: 1.3,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            const Text(
+                              '11 de agosto, 2023',
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Container(
+                              height: 250,
+                              width: 250,
+                              decoration: const BoxDecoration(
+                                  image: DecorationImage(
+                                image: AssetImage(
+                                  'assets/cloudy.png',
+                                ),
+                              )),
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Column(
+                                  children: [
+                                    const Text(
+                                      'Temp',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 17,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
+                                    Text(
+                                      '${((snapshot.data!.main['temp'] - 32 * 5) / 9).toStringAsFixed(2)}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 21,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    )
+                                  ],
+                                ),
+                                const SizedBox(
+                                  width: 50,
+                                ),
+                                Column(
+                                  children: [
+                                    const Text(
+                                      'Wind',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 17,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
+                                    Text(
+                                      '${snapshot.data!.wind['speed']} km/h',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 21,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    )
+                                  ],
+                                ),
+                                const SizedBox(
+                                  width: 50,
+                                ),
+                                Column(
+                                  children: [
+                                    const Text(
+                                      'Hum',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 17,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
+                                    Text(
+                                      '${snapshot.data!.main['humidity']}%',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 21,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 30,
+                            ),
+                            ElevatedButton(
+                              onPressed: () {},
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.deepPurpleAccent[100],
+                                  minimumSize: Size(
+                                    MediaQuery.of(context).size.width / 1.1,
+                                    50,
+                                  )),
+                              child: const Text('Buscar Ciudad'),
+                            )
+                          ],
+                        );
+                      } else if (snapshot.hasError) {
+                        return const Text('Verificar ciudad');
+                      } else {
+                        return const CircularProgressIndicator(
+                          color: Colors.white,
+                        );
+                      }
+                    },
+                  ),
                 ],
               ),
             ),
-          ),
-        ),
-
-        Expanded(
-          flex: 9,
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: ListView(
-              children: const [
-                TemperatureCard(),
-                SizedBox(height: 50),
-                TemperaturesMaxMinCard(),
-                SizedBox(height: 50),
-                MoreOptionsCard(),
-                SizedBox(height: 10,)
-              ],
-            ),
-          )
-        ),
-      ]
-    );
-  }
-}
-
-class TemperatureCard extends StatelessWidget {
-  const TemperatureCard({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox(
-      width: 300,
-      height: 200,
-      child: Card(
-        elevation: 5,
-        child: Padding(
-          padding: EdgeInsets.all(10),
-          child: Column(
-            children: [
-              Expanded(
-                flex: 1,
-                child: Text('Temperatura Actual:')
-              ),
-          
-              Expanded(
-                flex: 9,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                  
-                    Expanded(
-                      flex: 5,
-                      child: Icon(Icons.device_thermostat_sharp, size: 60,)
-                    ),
-                        
-                    Expanded(
-                      flex: 5,
-                      child: Text('24 °C', textAlign: TextAlign.center, style: TextStyle(fontSize: 50),)
-                    )
-                  ],
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class TemperaturesMaxMinCard extends StatelessWidget {
-  const TemperaturesMaxMinCard({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox(
-      width: 300,
-      height: 200,
-      child: Card(
-        elevation: 5,
-        child: Padding(
-          padding: EdgeInsets.all(10),
-          child: Column(
-            children: [
-              Expanded(
-                flex: 1,
-                child: Text('Temperaturas Registradas:')
-              ),
-          
-              Expanded(
-                flex: 9,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                  
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Text('Max', textAlign: TextAlign.center, style: TextStyle(fontSize: 20)),
-                        Text('24 C', textAlign: TextAlign.center, style: TextStyle(fontSize: 40)),
-                      ],
-                    ),
-
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Text('Min', textAlign: TextAlign.center, style: TextStyle(fontSize: 20)),
-                        Text('24 C', textAlign: TextAlign.center, style: TextStyle(fontSize: 40)),
-                      ],
-                    ),
-                        
-                    
-                  ],
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class MoreOptionsCard extends StatelessWidget {
-  const MoreOptionsCard({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox(
-      width: 300,
-      height: 200,
-      child: Card(
-        elevation: 5,
-        child: Padding(
-          padding: EdgeInsets.all(10),
-          child: Column(
-            children: [
-              Expanded(
-                flex: 1,
-                child: Text('Datos adicionales:')
-              ),
-          
-              Expanded(
-                flex: 9,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                  
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Text('Viento', textAlign: TextAlign.center,),
-                        Icon(Icons.air_rounded, size: 40,),
-                        Text('11 Km/h', 
-                          textAlign: TextAlign.center, 
-                          style: TextStyle(fontWeight: FontWeight.bold)
-                        ),
-                      ],
-                    ),
-
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Text('Prob Lluvia', textAlign: TextAlign.center,),
-                        Icon(Icons.water_drop_rounded, size: 40,),
-                        Text('34 %', 
-                          textAlign: TextAlign.center, 
-                          style: TextStyle(fontWeight: FontWeight.bold)
-                        ),
-                      ],
-                    ),
-
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Text('Hum %', textAlign: TextAlign.center,),
-                        Icon(Icons.waves_rounded, size: 40,),
-                        Text('69 %', 
-                          textAlign: TextAlign.center, 
-                          style: TextStyle(fontWeight: FontWeight.bold)
-                        ),
-                      ],
-                    ),
-                        
-                    
-                  ],
-                ),
-              )
-            ],
-          ),
+          ],
         ),
       ),
     );

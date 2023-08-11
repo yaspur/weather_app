@@ -15,11 +15,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   late Future<Weather> myWeather;
 
-  Future<Weather> fetchWeather() async {
+  Future<Weather> fetchWeather(String ciudad) async {
 
     final resp = await http.get(
       Uri.parse(
-        'https://api.openweathermap.org/data/2.5/weather?q=barranquilla&appid=a7f6ded3dd2350f5ad6ef7ea5480891d'
+        'https://api.openweathermap.org/data/2.5/weather?q=${ciudad.toLowerCase()}&appid=a7f6ded3dd2350f5ad6ef7ea5480891d'
       )
     );
 
@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    myWeather = fetchWeather();
+    myWeather = fetchWeather('Barranquilla');
   }
 
   @override
